@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editorial · Ascendra</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#044C52;--teal:#61C3D9;--surface:#EBF6F6;--white:#fff;
+  --ink:#0D1B1C;--muted:#6B8E90;--border:#C8E6E8;--bg:#F4FAFA;
+  --s-rascunho:#8B9EA0;--s-revisao:#D4960A;--s-aprovado:#1E9E5E;--s-publicado:#61C3D9;
+  --bg-rascunho:#F0F3F3;--bg-revisao:#FEF7E6;--bg-aprovado:#E8F7F0;--bg-publicado:#E6F7FB;
+  --cecilia:#6C63FF;--jp:#1E9E5E;--elton:#D4960A;--ramon:#E05A7A;
+  --r:10px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--dark);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.login-logo{width:52px;height:52px;background:var(--teal);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;color:var(--dark);margin-bottom:16px}
+.login-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:-.3px}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:40px}
+.login-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;width:100%;max-width:380px}
+.login-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:18px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all .18s}
+.login-card:hover{background:rgba(255,255,255,.13);border-color:var(--teal)}
+.login-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15)}
+.login-avatar-ph{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.15)}
+.login-name{font-size:13px;font-weight:600;color:#fff}
+.login-role{font-size:11px;color:rgba(255,255,255,.45)}
+
+/* SYNC INDICATOR */
+.sync-bar{background:#E8F7F0;border-bottom:1px solid #b2dfc9;padding:6px 20px;font-size:11px;font-weight:600;color:#0f5c38;display:none;align-items:center;gap:8px}
+.sync-bar.syncing{background:var(--bg-revisao);border-color:#f0d48a;color:#7a5800;display:flex}
+.sync-bar.ok{background:#E8F7F0;border-color:#b2dfc9;color:#0f5c38;display:flex}
+.sync-bar.error{background:#FEF0F0;border-color:#f5b8b8;color:#9b2c2c;display:flex}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* TOPBAR */
+.topbar{background:var(--dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo{width:30px;height:30px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--dark);flex-shrink:0}
+.topbar-title{font-weight:600;font-size:15px;color:#fff;letter-spacing:-.2px}
+.topbar-title span{color:var(--teal)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-pill{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px 4px 4px;cursor:pointer;transition:background .15s}
+.user-pill:hover{background:rgba(255,255,255,.18)}
+.user-pill-av{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.user-pill-name{font-size:12px;font-weight:500;color:#fff}
+.topbar-btn{background:var(--teal);border:none;color:var(--dark);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
+.topbar-sync{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;transition:all .15s}
+.topbar-sync:hover{border-color:var(--teal);color:#fff}
+
+/* STATS */
+.statsbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;overflow-x:auto}
+.stat-item{display:flex;align-items:center;gap:8px;padding:12px 16px;border-right:1px solid var(--border);white-space:nowrap;flex-shrink:0}
+.stat-item:last-child{border-right:none;flex:1}
+.stat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.stat-num{font-size:18px;font-weight:700;color:var(--ink)}
+.stat-label{font-size:11px;color:var(--muted);font-weight:500}
+.progress-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:100px}
+.pbar{flex:1;height:4px;background:var(--border);border-radius:10px;overflow:hidden}
+.pfill{height:100%;background:var(--teal);border-radius:10px;transition:width .4s}
+.pct-label{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+
+/* TABS */
+.tabs{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.tab.active{color:var(--dark);border-bottom-color:var(--teal);font-weight:600}
+.tab:hover:not(.active){color:var(--ink)}
+
+/* MAIN */
+.main{padding:20px;max-width:1140px;margin:0 auto}
+.view{display:none}.view.active{display:block}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.fselect{border:1px solid var(--border);background:var(--white);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--ink);cursor:pointer;outline:none;font-family:'Inter',sans-serif}
+.fselect:focus{border-color:var(--teal)}.fselect.active-filter{border-color:var(--teal);background:var(--bg-publicado);font-weight:600;color:var(--dark)}
+.toolbar-spacer{flex:1}
+.owner-legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.legend-chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--muted)}
+
+/* CALENDÁRIO */
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.cal-nav-btn{background:var(--white);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.cal-nav-btn:hover{border-color:var(--teal)}
+.cal-month{font-weight:700;font-size:15px;color:var(--dark)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.dow{text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{background:var(--white);border:1px solid var(--border);border-radius:var(--r);height:88px;max-height:88px;padding:5px;cursor:pointer;transition:border-color .15s;overflow:hidden}
+.cal-cell:hover{border-color:var(--teal)}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default}.cal-cell:not(.empty):hover .cal-day::after{content:' +';color:var(--teal);font-size:10px}
+.cal-cell.empty:hover{border-color:transparent}
+.cal-cell.today{border-color:var(--teal);border-width:2px}
+.cal-day{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.cal-cell.today .cal-day{color:var(--dark)}
+.cal-chips{display:flex;flex-direction:column;gap:2px}
+.cal-chip{border-radius:3px;padding:1px 4px;font-size:9px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px;line-height:1.4}
+.cal-chip.rascunho{background:var(--bg-rascunho);color:#3d5557}
+.cal-chip.revisao{background:var(--bg-revisao);color:#7a5800}
+.cal-chip.aprovado{background:var(--bg-aprovado);color:#0f5c38}
+.cal-chip.publicado{background:var(--bg-publicado);color:var(--dark)}
+.chip-av{width:14px;height:14px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.chip-av-ph{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#fff;flex-shrink:0}
+.cal-more{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:800px){.kanban{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.kanban{grid-template-columns:1fr}}
+.kcol{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.kcol-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.kcol-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.kcol-dot{width:7px;height:7px;border-radius:50%}
+.kcol-count{background:var(--bg);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--muted)}
+.kcards{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+
+/* CARD */
+.kcard{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:11px 13px;cursor:pointer;transition:box-shadow .15s;border-left:3px solid var(--border);position:relative}
+.kcard:hover{box-shadow:0 3px 14px rgba(4,76,82,.09)}
+.kcard.mine{border-color:var(--teal);background:#FAFFFE}
+.kcard.mine::after{content:'meu';position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;background:var(--teal);color:var(--dark);border-radius:20px;padding:1px 6px;letter-spacing:.3px;text-transform:uppercase}
+.card-img{width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:8px;display:block}
+.card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.card-title{font-size:13px;font-weight:600;line-height:1.3;flex:1}
+.card-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.ctag{font-size:10px;font-weight:500;background:var(--bg);border-radius:4px;padding:2px 6px;color:var(--muted)}
+.ctag.ascendra{background:#E6F3F4;color:var(--dark)}
+.ctag.admite{background:#EBE8FF;color:#3d2d99}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.card-date{font-size:11px;color:var(--muted)}
+.card-approvers{display:flex}
+.av{width:20px;height:20px;border-radius:50%;border:2px solid var(--white);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;margin-left:-4px;flex-shrink:0;object-fit:cover}
+.av:first-child{margin-left:0}
+.av.pending{opacity:.35}
+
+/* PLANEJAMENTO */
+.plan-banner{background:var(--dark);border-radius:var(--r);padding:16px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-banner h3{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px}
+.plan-banner p{font-size:12px;color:rgba(255,255,255,.5)}
+.plan-approve-all{background:var(--teal);border:none;color:var(--dark);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer}
+.plan-items{display:flex;flex-direction:column;gap:8px}
+.plan-item{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+.plan-item:hover{border-color:var(--teal)}
+.plan-item.mine{border-color:var(--teal);background:#FAFFFE}
+.plan-owner-stripe{width:4px;height:40px;border-radius:4px;flex-shrink:0}
+.plan-info{flex:1;min-width:0}
+.plan-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plan-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.plan-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.status-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.status-pill.rascunho{background:var(--bg-rascunho);color:#3d5557}
+.status-pill.revisao{background:var(--bg-revisao);color:#7a5800}
+.status-pill.aprovado{background:var(--bg-aprovado);color:#0f5c38}
+.status-pill.publicado{background:var(--bg-publicado);color:var(--dark)}
+.plan-approve-btn{background:var(--bg-aprovado);color:#0f5c38;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.plan-approve-btn.done{background:var(--bg);color:var(--muted);cursor:default}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(4,20,22,.5);z-index:500;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.overlay{align-items:center;padding:20px}}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;position:relative}
+@media(min-width:600px){.modal{border-radius:14px}}
+.modal-inner{padding:24px 20px}
+.modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:18px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--border)}
+.modal-img-wrap{position:relative;margin-bottom:16px}
+.modal-img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:block}
+.modal-img-placeholder{width:100%;height:44px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:border-color .15s;margin-bottom:12px}
+.modal-img-placeholder:hover{border-color:var(--teal);background:var(--surface)}
+.modal-img-placeholder span{font-size:12px;color:var(--muted);font-weight:500}
+.img-change-btn{position:absolute;bottom:8px;right:8px;background:rgba(4,76,82,.75);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer}
+.modal-title-display{font-size:17px;font-weight:700;margin-bottom:4px;padding-right:36px;line-height:1.3}
+.modal-sub-display{font-size:12px;color:var(--muted);margin-bottom:14px}
+.msec{margin-bottom:14px}
+.mlabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px}
+.mfield{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);background:var(--white);outline:none;font-family:'Inter',sans-serif}
+.mfield:focus{border-color:var(--teal)}
+textarea.mfield{resize:vertical;min-height:65px}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.mrow{grid-template-columns:1fr}}
+.link-row{display:flex;gap:6px}
+.link-row .mfield{flex:1}
+.link-open{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--dark);cursor:pointer;white-space:nowrap}
+.link-open:hover{border-color:var(--teal)}
+.profile-upload-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.profile-upload-info strong{font-size:13px;font-weight:600;display:block;margin-bottom:2px}
+.profile-upload-info span{font-size:11px;color:var(--muted)}
+.profile-upload-btn{font-size:11px;font-weight:600;color:var(--dark);background:var(--white);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;margin-top:6px;display:inline-block}
+.profile-upload-btn:hover{border-color:var(--teal)}
+.approver-list{display:flex;gap:8px;flex-wrap:wrap}
+.approver-btn{border:1px solid var(--border);background:var(--bg);border-radius:9px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;min-width:110px;transition:all .15s}
+.approver-btn:hover{border-color:var(--teal)}
+.approver-btn.approved{background:var(--bg-aprovado);border-color:var(--s-aprovado)}
+.approver-name{font-size:12px;font-weight:600}
+.approver-status{font-size:10px;color:var(--muted)}
+.approver-btn.approved .approver-status{color:var(--s-aprovado);font-weight:600}
+.owner-sel{display:flex;gap:8px;flex-wrap:wrap}
+.owner-btn{border:1px solid var(--border);background:var(--bg);border-radius:9px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s}
+.owner-btn:hover{border-color:var(--teal)}
+.owner-btn.active{border-width:2px}
+.owner-btn[data-u="Cecília"].active{border-color:var(--cecilia);background:#F0EEFF}
+.owner-btn[data-u="João Paulo"].active{border-color:var(--jp);background:#E8F7F0}
+.owner-btn[data-u="Elton"].active{border-color:var(--elton);background:#FEF7E6}
+.owner-btn[data-u="Ramon"].active{border-color:var(--ramon);background:#FEF0F4}
+.owner-btn-name{font-size:12px;font-weight:600}
+.comment{background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px}
+.comment-body{}
+.comment-hd{display:flex;gap:8px;align-items:baseline;margin-bottom:3px}
+.comment-author{font-size:12px;font-weight:600}
+.comment-time{font-size:11px;color:var(--muted)}
+.comment-text{font-size:13px;line-height:1.5}
+.comment-input-row{display:flex;gap:6px;margin-top:10px;align-items:center}
+.comment-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:'Inter',sans-serif}
+.comment-input:focus{border-color:var(--teal)}
+.comment-send{background:var(--teal);color:var(--dark);border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);margin-top:4px}
+.maction{flex:1;min-width:120px;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.maction:hover{opacity:.88}
+.a-save{background:var(--dark);color:#fff}
+.a-review{background:var(--bg-revisao);color:#7a5800}
+.a-approve{background:var(--bg-aprovado);color:#0f5c38}
+.a-publish{background:var(--teal);color:var(--dark)}
+.a-back{background:var(--bg);color:var(--muted);border:1px solid var(--border);flex:0;min-width:auto;padding:10px 12px}
+
+/* NEW MODAL */
+.new-overlay{display:none;position:fixed;inset:0;background:rgba(4,20,22,.5);z-index:500;align-items:flex-end;justify-content:center}
+@media(min-width:600px){.new-overlay{align-items:center;padding:20px}}
+.new-overlay.open{display:flex}
+.new-modal{background:var(--white);border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:94vh;overflow-y:auto;padding:24px 20px;position:relative}
+@media(min-width:600px){.new-modal{border-radius:14px}}
+.new-title{font-size:16px;font-weight:700;margin-bottom:18px;padding-right:36px}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap}
+.tag-btn{border:1px solid var(--border);background:var(--white);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .15s;color:var(--ink)}
+.tag-btn.sel{background:var(--dark);color:#fff;border-color:var(--dark)}
+.upload-area{width:100%;border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .15s;background:var(--bg)}
+.upload-area:hover{border-color:var(--teal)}
+.upload-area p{font-size:12px;color:var(--muted);margin-top:4px}
+.upload-preview{width:100%;max-height:110px;object-fit:cover;border-radius:6px;display:block;margin-top:8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.empty{text-align:center;padding:28px 16px;color:var(--muted)}
+.empty-ico{font-size:28px;margin-bottom:6px}
+.empty h3{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.empty p{font-size:12px}
+@media(max-width:600px){.main{padding:12px}.cal-cell{min-height:58px;padding:4px}.cal-chip{font-size:9px}.tabs{overflow-x:auto}.mrow{grid-template-columns:1fr}.statsbar{flex-wrap:nowrap}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-logo">A</div>
+  <div class="login-title">Editorial Ascendra</div>
+  <div class="login-sub">Quem é você?</div>
+  <div class="login-grid" id="loginGrid"></div>
+</div>
+
+<div id="app" style="display:none">
+
+<div class="sync-bar" id="syncBar">
+  <div class="sync-dot"></div>
+  <span id="syncMsg">Sincronizando...</span>
+</div>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">A</div>
+    <span class="topbar-title">Editorial <span>·</span> Ascendra</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-sync" onclick="syncNow()" title="Atualizar dados">↻ Sincronizar</button>
+    <div class="user-pill" onclick="logout()" title="Trocar usuário" id="topPill"></div>
+    <button class="topbar-btn" onclick="openNew()">＋ Novo</button>
+  </div>
+</header>
+
+<div class="statsbar">
+  <div class="stat-item"><div class="stat-dot" style="background:var(--s-rascunho)"></div><div><div class="stat-num" id="sRascunho">0</div><div class="stat-label">Rascunho</div></div></div>
+  <div class="stat-item"><div class="stat-dot" style="background:var(--s-revisao)"></div><div><div class="stat-num" id="sRevisao">0</div><div class="stat-label">Em revisão</div></div></div>
+  <div class="stat-item"><div class="stat-dot" style="background:var(--s-aprovado)"></div><div><div class="stat-num" id="sAprovado">0</div><div class="stat-label">Aprovado</div></div></div>
+  <div class="stat-item"><div class="stat-dot" style="background:var(--s-publicado)"></div><div><div class="stat-num" id="sPublicado">0</div><div class="stat-label">Publicado</div></div></div>
+  <div class="stat-item"><div class="progress-wrap"><div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div><span class="pct-label" id="pctLabel">0%</span></div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('calendario')">📅 Calendário</div>
+  <div class="tab" onclick="switchTab('kanban')">📋 Kanban</div>
+  <div class="tab" onclick="switchTab('planejamento')">✅ Planejamento</div>
+</div>
+
+<div class="main">
+  <div class="toolbar">
+    <div class="owner-legend" id="legend"></div>
+    <div class="toolbar-spacer"></div>
+    <select class="fselect" id="fMarca" onchange="renderAll()"><option value="">Todas as marcas</option><option>Ascendra</option><option>Admite Fácil</option></select>
+    <select class="fselect" id="fStatus" onchange="renderAll()"><option value="">Todos os status</option><option value="rascunho">Rascunho</option><option value="revisao">Em revisão</option><option value="aprovado">Aprovado</option><option value="publicado">Publicado</option></select>
+    <select class="fselect" id="fApprover" onchange="renderAll()" title="Filtrar pelo que precisa da sua aprovação"><option value="">Todos os aprovadores</option><option>Cecília</option><option>João Paulo</option><option>Elton</option><option>Ramon</option></select>
+  </div>
+
+  <div id="view-calendario" class="view active">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="cal-month" id="calMonth"></span>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-dow"><div class="dow">Dom</div><div class="dow">Seg</div><div class="dow">Ter</div><div class="dow">Qua</div><div class="dow">Qui</div><div class="dow">Sex</div><div class="dow">Sáb</div></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div id="view-kanban" class="view">
+    <div class="kanban">
+      <div class="kcol"><div class="kcol-head"><div class="kcol-label"><div class="kcol-dot" style="background:var(--s-rascunho)"></div>Rascunho</div><span class="kcol-count" id="kc0">0</span></div><div class="kcards" id="kcards-rascunho"></div></div>
+      <div class="kcol"><div class="kcol-head"><div class="kcol-label"><div class="kcol-dot" style="background:var(--s-revisao)"></div>Em revisão</div><span class="kcol-count" id="kc1">0</span></div><div class="kcards" id="kcards-revisao"></div></div>
+      <div class="kcol"><div class="kcol-head"><div class="kcol-label"><div class="kcol-dot" style="background:var(--s-aprovado)"></div>Aprovado</div><span class="kcol-count" id="kc2">0</span></div><div class="kcards" id="kcards-aprovado"></div></div>
+      <div class="kcol"><div class="kcol-head"><div class="kcol-label"><div class="kcol-dot" style="background:var(--s-publicado)"></div>Publicado</div><span class="kcol-count" id="kc3">0</span></div><div class="kcards" id="kcards-publicado"></div></div>
+    </div>
+  </div>
+
+  <div id="view-planejamento" class="view">
+    <div class="plan-banner">
+      <div><h3>Plano do mês — visão geral</h3><p>Todo o conteúdo pendente. João Paulo aprova com um clique.</p></div>
+      <button class="plan-approve-all" onclick="approveAll()">Aprovar tudo (JP)</button>
+    </div>
+    <div class="plan-items" id="planItems"></div>
+  </div>
+</div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay" onclick="closeIfBg(event,'detailOverlay')">
+  <div class="modal"><div class="modal-inner">
+    <button class="modal-close" onclick="closeDetail()">×</button>
+
+    <div id="dImgWrap" style="display:none" class="modal-img-wrap">
+      <img id="dImg" class="modal-img-preview" src="" alt="">
+      <button class="img-change-btn" onclick="document.getElementById('imgChangeInput').click()">Trocar imagem</button>
+      <input type="file" id="imgChangeInput" accept="image/*" style="display:none" onchange="handleImgChange(event)">
+    </div>
+    <div id="dImgPlaceholder" class="modal-img-placeholder" onclick="document.getElementById('imgChangePlaceholder').click()">
+      <span style="font-size:14px">🖼️</span><span style="font-size:11px;color:var(--muted);font-weight:500">Adicionar imagem do post</span>
+      <input type="file" id="imgChangePlaceholder" accept="image/*" style="display:none" onchange="handleImgChange(event)">
+    </div>
+    <div class="msec">
+      <div class="mlabel">Título</div>
+      <input class="mfield" id="dTitle" placeholder="Título do conteúdo">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <span class="status-pill" id="dStatusPill"></span>
+      <span id="dOwnerBadge" style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px"></span>
+      <span id="dSub" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div class="mrow msec">
+      <div>
+        <div class="mlabel">Formato</div>
+        <select class="mfield" id="dFormato">
+          <option>Post</option><option>Carrossel</option><option>Vídeo</option><option>YouTube</option><option>Blog</option>
+          <option>Email</option><option>Podcast</option><option>Landing page</option>
+        </select>
+      </div>
+      <div>
+        <div class="mlabel">Plataforma <span style="font-size:9px;color:var(--muted);text-transform:none;letter-spacing:0">(múltipla)</span></div>
+        <div class="tag-row" id="dPlatformTags" style="flex-wrap:wrap;gap:5px">
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">Instagram</button>
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">LinkedIn</button>
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">Blog</button>
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">Email</button>
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">YouTube</button>
+          <button class="tag-btn" onclick="togTag(this)" style="font-size:11px;padding:3px 9px">WhatsApp</button>
+        </div>
+      </div>
+    </div>
+    <div class="mrow msec">
+      <div>
+        <div class="mlabel">Marca</div>
+        <select class="mfield" id="dBrand">
+          <option>Ascendra</option><option>Admite Fácil</option>
+        </select>
+      </div>
+      <div>
+        <div class="mlabel">Data de publicação</div>
+        <input class="mfield" id="dDate" type="date">
+      </div>
+    </div>
+    <div class="msec"><div class="mlabel">Responsável por este conteúdo</div><div class="owner-sel" id="dOwnerSel"></div></div>
+    <div class="msec"><div class="mlabel">Briefing</div><textarea class="mfield" id="dBriefing" placeholder="Objetivo, público, pauta, CTA..." style="min-height:65px"></textarea></div>
+    <div class="msec">
+      <div class="mlabel">Link do arquivo (Google Docs, Canva...)</div>
+      <div class="link-row"><input class="mfield" id="dLink" type="url" placeholder="https://docs.google.com/..."><button class="link-open" onclick="openLink()">Abrir ↗</button></div>
+    </div>
+    <div class="msec"><div class="mlabel">Aprovadores</div><div class="approver-list" id="dApprovers"></div></div>
+    <div class="msec">
+      <div class="mlabel">Comentários</div>
+      <div id="dComments"></div>
+      <div class="comment-input-row">
+        <div id="commentInputAv"></div>
+        <input class="comment-input" id="commentInput" placeholder="Escrever comentário...">
+        <button class="comment-send" onclick="addComment()">Enviar</button>
+      </div>
+    </div>
+    <div class="modal-actions" id="dActions"></div>
+  </div></div>
+</div>
+
+<!-- NEW MODAL -->
+<div class="new-overlay" id="newOverlay" onclick="closeIfBg(event,'newOverlay')">
+  <div class="new-modal">
+    <button class="modal-close" onclick="closeNew()">×</button>
+    <div class="new-title">Novo conteúdo</div>
+    <div class="msec"><div class="mlabel">Título *</div><input class="mfield" id="nTitle" placeholder="Ex: Carrossel LGPD — o que mudou"></div>
+    <div class="msec"><div class="mlabel">Responsável</div><div class="owner-sel" id="nOwnerSel"></div></div>
+    <div class="mrow msec">
+      <div><div class="mlabel">Marca</div><div class="tag-row" id="nBrand"><button class="tag-btn sel" onclick="selTag(this,'nBrand')">Ascendra</button><button class="tag-btn" onclick="selTag(this,'nBrand')">Admite Fácil</button></div></div>
+      <div><div class="mlabel">Formato</div><div class="tag-row" id="nFormato"><button class="tag-btn sel" onclick="selTag(this,'nFormato')">Post</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Carrossel</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Vídeo</button><button class="tag-btn" onclick="selTag(this,'nFormato')">YouTube</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Blog</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Email</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Podcast</button><button class="tag-btn" onclick="selTag(this,'nFormato')">Landing page</button></div></div>
+    </div>
+    <div class="mrow msec">
+      <div><div class="mlabel">Plataforma</div><div class="tag-row" id="nPlatform"><button class="tag-btn sel" onclick="selTag(this,'nPlatform')">Instagram</button><button class="tag-btn" onclick="selTag(this,'nPlatform')">LinkedIn</button><button class="tag-btn" onclick="selTag(this,'nPlatform')">Blog</button><button class="tag-btn" onclick="selTag(this,'nPlatform')">Email</button><button class="tag-btn" onclick="selTag(this,'nPlatform')">YouTube</button></div></div>
+      <div><div class="mlabel">Data de publicação *</div><input class="mfield" id="nDate" type="date"></div>
+    </div>
+    <div class="msec"><div class="mlabel">Briefing</div><textarea class="mfield" id="nBriefing" placeholder="Objetivo, público, pauta, CTA..."></textarea></div>
+    <div class="msec"><div class="mlabel">Link do arquivo (Google Docs, Canva...)</div><input class="mfield" id="nLink" type="url" placeholder="https://docs.google.com/..."></div>
+    <div class="msec">
+      <div class="mlabel">Imagem do post (opcional)</div>
+      <div class="upload-area" onclick="document.getElementById('nImgInput').click()">
+        <div style="font-size:22px">🖼️</div><p>Clique para fazer upload</p>
+        <img id="nImgPreview" class="upload-preview" style="display:none" alt="">
+      </div>
+      <input type="file" id="nImgInput" accept="image/*" style="display:none" onchange="handleNewImg(event)">
+    </div>
+    <div class="msec"><div class="mlabel">Quem precisa aprovar?</div><div class="tag-row" id="nApprovers"><button class="tag-btn" onclick="togTag(this)">João Paulo</button><button class="tag-btn" onclick="togTag(this)">Elton</button><button class="tag-btn" onclick="togTag(this)">Ramon</button><button class="tag-btn" onclick="togTag(this)">Cecília</button></div></div>
+    <div class="modal-actions"><button class="maction a-save" style="flex:2" onclick="saveNew()">Salvar conteúdo</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxxLWpeZCyItKAEK4_rTjmByXyGNCVS3W6ROd0D4vBFW8vM5rhrKfkKq_zhL1_6MKVl/exec';
+const USERS = ['Cecília','João Paulo','Elton','Ramon'];
+const UROLES = {'Cecília':'Marketing','João Paulo':'CEO','Elton':'COO','Ramon':'Head de Sistemas e AMS'};
+const UCOLORS = {'Cecília':'#6C63FF','João Paulo':'#1E9E5E','Elton':'#D4960A','Ramon':'#E05A7A'};
+
+let cu = null, contents = [], editId = null, newImgData = null;
+let calM = new Date().getMonth(), calY = new Date().getFullYear();
+let syncTimer = null;
+
+/* ── PROFILES (localStorage — foto é local de cada um) ── */
+function getProfiles(){ try{return JSON.parse(localStorage.getItem('asc_profiles')||'{}')}catch(e){return{}} }
+function setProfile(u,img){ const p=getProfiles();p[u]=img;try{localStorage.setItem('asc_profiles',JSON.stringify(p))}catch(e){} }
+function getAvatar(u){ return getProfiles()[u]||null }
+
+/* ── AVATAR ── */
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() }
+function avatarEl(u,size=28){
+  const img=getAvatar(u),col=UCOLORS[u]||'#888',ini=initials(u),s=size;
+  if(img) return `<img src="${img}" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${u}">`;
+  return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:${Math.round(s*.33)}px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>`;
+}
+
+/* ── SYNC STATUS ── */
+function syncStatus(state, msg){
+  const bar = document.getElementById('syncBar');
+  const msgEl = document.getElementById('syncMsg');
+  bar.className = 'sync-bar ' + state;
+  msgEl.textContent = msg;
+  if(state === 'ok') setTimeout(()=>{ bar.className='sync-bar'; }, 3000);
+}
+
+/* ── SHEETS API ── */
+async function sheetGet(){
+  syncStatus('syncing','Carregando dados...');
+  try {
+    const r = await fetch(API + '?action=get');
+    const j = await r.json();
+    if(j.ok && j.data){
+      // mescla imagens do localStorage (não sobem pro Sheets)
+      const localImgs = {};
+      try{ const li = JSON.parse(localStorage.getItem('asc_imgs')||'{}'); Object.assign(localImgs, li); }catch(e){}
+      contents = j.data.map(c=>({ ...c, img: localImgs[c.id] || c.img || '' }));
+      syncStatus('ok','Dados atualizados ✓');
+      loadSetembroSeed();
+    } else {
+      throw new Error(j.error||'Erro desconhecido');
+    }
+  } catch(err){
+    syncStatus('error','Erro ao carregar — usando dados locais');
+    // fallback: carrega do localStorage
+    try{ const d=localStorage.getItem('asc_ed_backup'); if(d)contents=JSON.parse(d); }catch(e){}
+    if(!contents.length) seed();
+  }
+  renderAll();
+}
+
+async function sheetSave(){
+  // backup local sempre
+  try{ localStorage.setItem('asc_ed_backup', JSON.stringify(contents)); }catch(e){}
+  // salva imagens separado no localStorage
+  const imgs = {};
+  contents.forEach(c=>{ if(c.img) imgs[c.id]=c.img; });
+  try{ localStorage.setItem('asc_imgs', JSON.stringify(imgs)); }catch(e){}
+
+  syncStatus('syncing','Salvando...');
+  try {
+    const r = await fetch(API, {
+      method:'POST',
+      body: JSON.stringify({ action:'save', items: contents })
+    });
+    const j = await r.json();
+    if(j.ok){ syncStatus('ok','Salvo ✓'); }
+    else throw new Error(j.error);
+  } catch(err){
+    syncStatus('error','Erro ao salvar — dado salvo localmente');
+  }
+}
+
+function syncNow(){ sheetGet(); }
+
+/* ── SEED (só usado se Sheets vazio e sem backup) ── */
+function seed(){
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  const d=n=>new Date(y,m,n).toISOString().slice(0,10);
+  contents=[
+    {id:1,title:'Carrossel LGPD — o que mudou',owner:'Cecília',brand:'Ascendra',formato:'Carrossel',platform:'Instagram',date:d(6),briefing:'Explicar as mudanças da ANPD. CTA: Comente LGPD.',link:'',status:'revisao',approvers:['João Paulo','Elton'],approvals:[],comments:[{author:'Cecília',text:'Slides prontos no Canva.',time:'09:30'}],img:''},
+    {id:2,title:'Post Reforma Tributária — NF-e',owner:'Cecília',brand:'Ascendra',formato:'Post',platform:'LinkedIn',date:d(8),briefing:'Obrigatoriedade do IBS/CBS na nota fiscal.',link:'',status:'aprovado',approvers:['Elton'],approvals:['Elton'],comments:[],img:''},
+    {id:3,title:'Email Fluig na Prática',owner:'Ramon',brand:'Ascendra',formato:'Email',platform:'Email',date:d(12),briefing:'Divulgação da live técnica do Lucas.',link:'https://docs.google.com',status:'rascunho',approvers:['João Paulo'],approvals:[],comments:[],img:''},
+    {id:4,title:'Carrossel Admite Fácil — Da pilha ao celular',owner:'Cecília',brand:'Admite Fácil',formato:'Carrossel',platform:'Instagram',date:d(15),briefing:'5 slides RH analógico ao digital.',link:'',status:'publicado',approvers:[],approvals:[],comments:[],img:''},
+    {id:5,title:'Artigo Blog — AWS Observabilidade',owner:'Elton',brand:'Ascendra',formato:'Blog',platform:'Blog',date:d(18),briefing:'SEO + educacional para CTOs.',link:'https://docs.google.com',status:'rascunho',approvers:['João Paulo','Ramon'],approvals:[],comments:[],img:''},
+    {id:6,title:'Podcast Ascendra Cast — EP 2',owner:'João Paulo',brand:'Ascendra',formato:'Podcast',platform:'YouTube',date:d(22),briefing:'Episódio com cliente da Axon Healthcare.',link:'',status:'revisao',approvers:['João Paulo'],approvals:[],comments:[],img:''},
+  ];
+  sheetSave();
+}
+
+/* ── LOGIN ── */
+function renderLogin(){
+  document.getElementById('loginGrid').innerHTML=USERS.map(u=>`
+    <div class="login-card" onclick="login('${u}')">
+      ${getAvatar(u)?`<img class="login-avatar" src="${getAvatar(u)}" alt="${u}">`:`<div class="login-avatar-ph" style="background:${UCOLORS[u]}">${initials(u)}</div>`}
+      <div class="login-name">${u}</div>
+      <div class="login-role">${UROLES[u]}</div>
+    </div>`).join('');
+}
+function login(u){
+  cu=u;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderTopPill();renderLegend();
+  sheetGet();
+  // auto-refresh a cada 30s
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(sheetGet, 30000);
+}
+function logout(){
+  if(syncTimer) clearInterval(syncTimer);
+  cu=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  renderLogin();
+}
+function renderTopPill(){
+  const av=getAvatar(cu),col=UCOLORS[cu],ini=initials(cu);
+  document.getElementById('topPill').innerHTML=
+    (av?`<img class="user-pill-av" src="${av}" alt="${cu}">`:`<div class="user-pill-av" style="background:${col};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;border-radius:50%">${ini}</div>`)
+    +`<span class="user-pill-name">${cu}</span>`;
+}
+function renderLegend(){
+  document.getElementById('legend').innerHTML=USERS.map(u=>`
+    <div class="legend-chip">${avatarEl(u,18)}<span>${u}</span></div>`).join('');
+}
+
+/* ── FILTERS ── */
+function filtered(){
+  const m=document.getElementById('fMarca').value;
+  const s=document.getElementById('fStatus').value;
+  const ap=document.getElementById('fApprover')?document.getElementById('fApprover').value:'';
+  return contents.filter(c=>
+    (!m||c.brand===m)&&
+    (!s||c.status===s)&&
+    (!ap||(c.approvers||[]).includes(ap))
+  );
+}
+function sLabel(s){return{rascunho:'Rascunho',revisao:'Em revisão',aprovado:'Aprovado',publicado:'Publicado'}[s]||s}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+
+/* ── TABS ── */
+function switchTab(n){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['calendario','kanban','planejamento'][i]===n));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${n}`));
+  renderAll();
+}
+
+/* ── STATS ── */
+function updateStats(){
+  const fc=filtered(),c={rascunho:0,revisao:0,aprovado:0,publicado:0};
+  fc.forEach(x=>c[x.status]=(c[x.status]||0)+1);
+  document.getElementById('sRascunho').textContent=c.rascunho;
+  document.getElementById('sRevisao').textContent=c.revisao;
+  document.getElementById('sAprovado').textContent=c.aprovado;
+  document.getElementById('sPublicado').textContent=c.publicado;
+  const tot=fc.length,pct=tot?Math.round(c.publicado/tot*100):0;
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('pctLabel').textContent=pct+'% publicado';
+}
+
+/* ── CALENDÁRIO ── */
+function renderCal(){
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('calMonth').textContent=`${months[calM]} ${calY}`;
+  const first=new Date(calY,calM,1).getDay(),days=new Date(calY,calM+1,0).getDate();
+  const todayStr=new Date().toISOString().slice(0,10),fc=filtered(),byDate={};
+  fc.forEach(c=>{const pfx=`${calY}-${String(calM+1).padStart(2,'0')}`;if(c.date&&c.date.startsWith(pfx)){(byDate[c.date]=byDate[c.date]||[]).push(c);}});
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===todayStr,items=byDate[ds]||[],max=3;
+    const chips=items.slice(0,max).map(c=>{
+      const avImg=getAvatar(c.owner),col=UCOLORS[c.owner]||'#888',ini=initials(c.owner);
+      const avH=avImg?`<img class="chip-av" src="${avImg}" alt="${c.owner}" title="${c.owner}">`:`<div class="chip-av-ph" style="background:${col}" title="${c.owner}">${ini}</div>`;
+      return `<div class="cal-chip ${c.status}" onclick="openDetail(${c.id},event)">${avH}<span style='flex-shrink:0'>${formatIcon(c.formato)}</span>${c.title}</div>`;
+    }).join('');
+    const more=items.length>max?`<div class="cal-more">+${items.length-max} mais</div>`:'';
+    html+=`<div class="cal-cell${isToday?' today':''}" onclick="openDay('${ds}')"><div class="cal-day">${d}</div><div class="cal-chips">${chips}${more}</div></div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function changeMonth(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+function openDay(ds){
+  const items=filtered().filter(c=>c.date===ds);
+  if(items.length===0){ openNew(ds); return; }
+  // Mostrar mini-menu
+  showDayMenu(ds, items);
+}
+
+function showDayMenu(ds, items){
+  // Remove menu anterior se existir
+  const old=document.getElementById('dayMenu'); if(old)old.remove();
+  const menu=document.createElement('div');
+  menu.id='dayMenu';
+  menu.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(4,76,82,.15);z-index:600;min-width:280px;max-width:340px;overflow:hidden';
+  const header=`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;color:var(--dark)">${fmtDate(ds)}</span><button onclick="document.getElementById('dayMenu').remove()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted)">×</button></div>`;
+  const itemsHtml=items.map(c=>`
+    <div onclick="document.getElementById('dayMenu').remove();openDetail(${c.id})" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <span style="font-size:16px">${formatIcon(c.formato)}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px">${c.brand} · ${c.formato}</div>
+      </div>
+      <span class="status-pill ${c.status}" style="font-size:9px;padding:2px 6px;flex-shrink:0">${sLabel(c.status)}</span>
+    </div>`).join('');
+  const footer=`<div onclick="document.getElementById('dayMenu').remove();openNew('${ds}')" style="padding:10px 16px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--dark);font-size:12px;font-weight:600" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><span style="font-size:16px">＋</span>Adicionar conteúdo neste dia</div>`;
+  menu.innerHTML=header+itemsHtml+footer;
+  // overlay de fundo
+  const overlay=document.createElement('div');
+  overlay.id='dayMenuOverlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:599;background:rgba(4,20,22,.3)';
+  overlay.onclick=()=>{menu.remove();overlay.remove();};
+  document.body.appendChild(overlay);
+  document.body.appendChild(menu);
+}
+
+/* ── KANBAN ── */
+function renderKanban(){
+  ['rascunho','revisao','aprovado','publicado'].forEach((s,i)=>{
+    const items=filtered().filter(c=>c.status===s);
+    document.getElementById(`kc${i}`).textContent=items.length;
+    document.getElementById(`kcards-${s}`).innerHTML=items.length?items.map(cardHTML).join(''):`<div class="empty"><div class="empty-ico">📭</div><p style="font-size:11px">Nenhum</p></div>`;
+  });
+}
+function cardHTML(c){
+  const col=UCOLORS[c.owner]||'#888',mine=c.owner===cu;
+  const brandC=c.brand==='Ascendra'?'ascendra':'admite';
+  const dots=(c.approvers||[]).map(a=>{
+    const ok=(c.approvals||[]).includes(a),avImg=getAvatar(a);
+    return avImg
+      ?`<img class="av${ok?'':' pending'}" src="${avImg}" alt="${a}" title="${a}${ok?' ✓':''}" style="width:20px;height:20px;border-radius:50%;border:2px solid var(--white);margin-left:-4px;object-fit:cover;${ok?'':'opacity:.35'}">`
+      :`<div class="av${ok?'':' pending'}" style="background:${UCOLORS[a]||'#888'}" title="${a}${ok?' ✓':''}">${initials(a)}</div>`;
+  }).join('');
+  return `<div class="kcard${mine?' mine':''}" style="border-left-color:${col}" onclick="openDetail(${c.id})">
+    ${c.img?`<img class="card-img" src="${c.img}" alt="">`:'' }
+    <div class="card-top">${avatarEl(c.owner,24)}<div class="card-title">${c.title}</div></div>
+    <div class="card-meta"><span class="ctag ${brandC}">${c.brand}</span><span class="ctag">${formatIcon(c.formato)} ${c.formato}</span><span class="ctag">${c.platform}</span></div>
+    <div class="card-footer"><span class="card-date">${fmtDate(c.date)}</span><div class="card-approvers">${dots}</div></div>
+  </div>`;
+}
+
+/* ── PLANEJAMENTO ── */
+function renderPlanning(){
+  const fc=filtered().filter(c=>c.status!=='publicado');
+  const el=document.getElementById('planItems');
+  if(!fc.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🎉</div><h3>Tudo em dia!</h3><p>Nenhum conteúdo pendente.</p></div>`;return;}
+  el.innerHTML=fc.map(c=>{
+    const col=UCOLORS[c.owner]||'#888',mine=c.owner===cu;
+    const jpOk=(c.approvals||[]).includes('João Paulo'),needsJP=(c.approvers||[]).includes('João Paulo');
+    return `<div class="plan-item${mine?' mine':''}" onclick="openDetail(${c.id})">
+      <div class="plan-owner-stripe" style="background:${col}"></div>
+      ${avatarEl(c.owner,36)}
+      <div class="plan-info"><div class="plan-title">${c.title}</div><div class="plan-meta">${formatIcon(c.formato)} ${c.brand} · ${c.formato} · ${fmtDate(c.date)} · <span style="color:${col};font-weight:600">${c.owner}</span></div></div>
+      <div class="plan-right">
+        <span class="status-pill ${c.status}">${sLabel(c.status)}</span>
+        ${needsJP?(jpOk?`<button class="plan-approve-btn done" disabled>✓ JP aprovou</button>`:`<button class="plan-approve-btn" onclick="quickApprove(${c.id},'João Paulo',event)">Aprovar</button>`):''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function quickApprove(id,person,e){
+  e.stopPropagation();
+  const c=contents.find(x=>x.id==id);if(!c)return;
+  if(!(c.approvals||[]).includes(person))c.approvals.push(person);
+  if(c.approvers.length&&c.approvers.every(a=>c.approvals.includes(a)))c.status='aprovado';
+  sheetSave();renderAll();toast(`${person} aprovou ✓`);
+}
+function approveAll(){
+  filtered().filter(c=>c.status!=='publicado'&&(c.approvers||[]).includes('João Paulo')).forEach(c=>{
+    if(!(c.approvals||[]).includes('João Paulo'))c.approvals.push('João Paulo');
+    if(c.approvers.every(a=>c.approvals.includes(a)))c.status='aprovado';
+  });
+  sheetSave();renderAll();toast('João Paulo aprovou tudo ✓');
+}
+
+/* ── DETAIL MODAL ── */
+function openDetail(id,e){
+  if(e)e.stopPropagation();
+  const c=contents.find(x=>x.id==id);if(!c)return;
+  editId=id;
+
+  if(c.img){document.getElementById('dImg').src=c.img;document.getElementById('dImgWrap').style.display='block';document.getElementById('dImgPlaceholder').style.display='none';}
+  else{document.getElementById('dImgWrap').style.display='none';document.getElementById('dImgPlaceholder').style.display='flex';}
+  document.getElementById('dTitle').value=c.title;
+  document.getElementById('dSub').textContent=`${c.brand} · ${c.formato} · ${c.platform} · ${fmtDate(c.date)}`;
+  document.getElementById('dFormato').value=c.formato||'Post';
+  document.getElementById('dBrand').value=c.brand||'Ascendra';
+  document.getElementById('dDate').value=c.date||'';
+  // marcar plataformas (múltiplas)
+  const plats=(c.platform||'').split(', ').map(p=>p.trim());
+  document.querySelectorAll('#dPlatformTags .tag-btn').forEach(b=>{
+    b.classList.toggle('sel', plats.includes(b.textContent.trim()));
+  });
+  const sp=document.getElementById('dStatusPill');sp.className=`status-pill ${c.status}`;sp.textContent=sLabel(c.status);
+  const ob=document.getElementById('dOwnerBadge');ob.innerHTML=avatarEl(c.owner,20)+`<span style="color:${UCOLORS[c.owner]};font-weight:600">${c.owner}</span>`;
+  document.getElementById('dOwnerSel').innerHTML=USERS.map(u=>`<button class="owner-btn${c.owner===u?' active':''}" data-u="${u}" onclick="changeOwner('${u}')">${avatarEl(u,26)}<span class="owner-btn-name">${u}</span></button>`).join('');
+  document.getElementById('dBriefing').value=c.briefing||'';
+  document.getElementById('dLink').value=c.link||'';
+  const ap=c.approvers&&c.approvers.length?c.approvers:[];
+  renderApprovers(c);
+  renderComments(c);
+  document.getElementById('commentInputAv').innerHTML=avatarEl(cu,28);
+  const nextMap={rascunho:'revisao',revisao:'aprovado',aprovado:'publicado'};
+  const nextLbl={rascunho:'Enviar para revisão',revisao:'Marcar aprovado',aprovado:'Marcar publicado'};
+  const nextCls={rascunho:'a-review',revisao:'a-approve',aprovado:'a-publish'};
+  const ns=nextMap[c.status];
+  document.getElementById('dActions').innerHTML=`
+    <button class="maction a-save" onclick="saveEdits()" style="flex:2">Salvar alterações</button>
+    ${ns?`<button class="maction ${nextCls[c.status]}" onclick="changeStatus('${ns}')">${nextLbl[c.status]}</button>`:''}
+    ${c.status!=='rascunho'?`<button class="maction a-back" onclick="changeStatus('rascunho')" title="Voltar para rascunho">↩</button>`:''}
+    <button class="maction" style="background:#FEF0F0;color:#9b2c2c;border:1px solid #f5b8b8;flex:0;min-width:auto;padding:10px 12px" onclick="deleteContent()" title="Excluir conteúdo">🗑</button>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function handleProfileUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    setProfile(cu,ev.target.result);
+    renderTopPill();renderLegend();renderAll();
+    toast('Foto de perfil atualizada ✓');
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderApprovers(c){
+  const ap=c.approvers||[];
+  const available=USERS.filter(u=>!ap.includes(u));
+  const html=ap.map(a=>{
+    const ok=(c.approvals||[]).includes(a),isMe=a===cu;
+    return `<div class="approver-btn${ok?' approved':''}" style="position:relative">
+      <div onclick="toggleApproval('${a}')" style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer">
+        ${avatarEl(a,28)}
+        <div><div class="approver-name">${a}${isMe?' (você)':''}</div><div class="approver-status">${ok?'✓ Aprovado':'Pendente'}</div></div>
+      </div>
+      <button onclick="removeApprover('${a}')" title="Remover aprovador" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:0 4px;line-height:1;flex-shrink:0" onmouseover="this.style.color='var(--tier3)'" onmouseout="this.style.color='var(--muted)'">×</button>
+    </div>`;
+  }).join('');
+  const addBtn=available.length?`
+    <div style="position:relative;display:inline-block">
+      <button id="addApproverBtn" onclick="toggleAddApproverMenu()" style="border:1px dashed var(--border);background:var(--bg);border-radius:9px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px">
+        <span style="font-size:16px">＋</span>Adicionar aprovador
+      </button>
+      <div id="addApproverMenu" style="display:none;position:absolute;top:100%;left:0;margin-top:4px;background:var(--white);border:1px solid var(--border);border-radius:9px;box-shadow:0 4px 16px rgba(4,76,82,.12);z-index:10;min-width:160px;overflow:hidden">
+        ${available.map(u=>`<div onclick="addApprover('${u}')" style="padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:500" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">${avatarEl(u,20)}<span>${u}</span></div>`).join('')}
+      </div>
+    </div>`:'';
+  document.getElementById('dApprovers').innerHTML=html+addBtn;
+}
+
+function toggleAddApproverMenu(){
+  const menu=document.getElementById('addApproverMenu');
+  if(menu) menu.style.display=menu.style.display==='none'?'block':'none';
+}
+
+function addApprover(person){
+  const c=contents.find(x=>x.id==editId);if(!c)return;
+  c.approvers=c.approvers||[];
+  if(!c.approvers.includes(person)) c.approvers.push(person);
+  sheetSave();renderApprovers(c);renderAll();toast(`${person} adicionado como aprovador`);
+}
+
+function removeApprover(person){
+  const c=contents.find(x=>x.id==editId);if(!c)return;
+  c.approvers=(c.approvers||[]).filter(a=>a!==person);
+  c.approvals=(c.approvals||[]).filter(a=>a!==person);
+  // recalcular status se necessário
+  if(c.status==='aprovado' && c.approvers.length && !c.approvers.every(a=>c.approvals.includes(a))){
+    c.status='revisao';
+  }
+  sheetSave();renderApprovers(c);renderAll();toast(`${person} removido dos aprovadores`);
+}
+
+function renderComments(c){
+  const el=document.getElementById('dComments');
+  el.innerHTML=(c.comments||[]).length
+    ?(c.comments||[]).map(cm=>`<div class="comment">${avatarEl(cm.author,28)}<div class="comment-body"><div class="comment-hd"><span class="comment-author">${cm.author}</span><span class="comment-time">${cm.time}</span></div><div class="comment-text">${cm.text}</div></div></div>`).join('')
+    :`<p style="font-size:12px;color:var(--muted);margin-bottom:8px">Nenhum comentário ainda.</p>`;
+}
+function addComment(){
+  const input=document.getElementById('commentInput'),txt=input.value.trim();if(!txt)return;
+  const c=contents.find(x=>x.id==editId);if(!c)return;
+  const now=new Date(),t=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  (c.comments=c.comments||[]).push({author:cu,text:txt,time:t});
+  input.value='';sheetSave();renderComments(c);toast('Comentário adicionado');
+}
+function toggleApproval(person){
+  if(person!==cu){toast('Você só pode aprovar como você mesmo');return;}
+  const c=contents.find(x=>x.id==editId);if(!c)return;
+  c.approvals=c.approvals||[];
+  const idx=c.approvals.indexOf(person);
+  if(idx>-1)c.approvals.splice(idx,1);else c.approvals.push(person);
+  if(c.approvers.length&&c.approvers.every(a=>c.approvals.includes(a)))c.status='aprovado';
+  sheetSave();openDetail(editId);renderAll();
+  toast(idx>-1?'Aprovação removida':`${person} aprovou ✓`);
+}
+function changeOwner(u){const c=contents.find(x=>x.id==editId);if(!c)return;c.owner=u;sheetSave();openDetail(editId);renderAll();}
+function changeStatus(ns){const c=contents.find(x=>x.id==editId);if(!c)return;c.status=ns;sheetSave();closeDetail();renderAll();toast(`Status: ${sLabel(ns)}`);}
+function saveEdits(){
+  const c=contents.find(x=>x.id==editId);if(!c)return;
+  const title=document.getElementById('dTitle').value.trim();
+  if(!title){toast('O título não pode estar vazio');return;}
+  c.title=title;
+  c.briefing=document.getElementById('dBriefing').value.trim();
+  c.link=document.getElementById('dLink').value.trim();
+  c.formato=document.getElementById('dFormato').value;
+  c.platform=getSel('dPlatformTags').join(', ')||c.platform||'Instagram';
+  c.brand=document.getElementById('dBrand').value;
+  c.date=document.getElementById('dDate').value;
+  sheetSave();renderAll();
+  document.getElementById('dSub').textContent=`${c.brand} · ${c.formato} · ${c.platform} · ${fmtDate(c.date)}`;
+  renderAll();toast('Conteúdo atualizado ✓');
+}
+function deleteContent(){
+  if(!confirm('Tem certeza que quer excluir este conteúdo? Essa ação não pode ser desfeita.'))return;
+  contents=contents.filter(x=>x.id!=editId);
+  sheetSave();closeDetail();renderAll();toast('Conteúdo excluído');
+}
+function saveLink(){const c=contents.find(x=>x.id==editId);if(!c)return;c.link=document.getElementById('dLink').value;sheetSave();toast('Link salvo ✓');}
+function openLink(){const u=document.getElementById('dLink').value;if(u)window.open(u,'_blank');}
+function handleImgChange(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const c=contents.find(x=>x.id==editId);if(!c)return;
+    c.img=ev.target.result;sheetSave();
+    document.getElementById('dImg').src=ev.target.result;
+    document.getElementById('dImgWrap').style.display='block';
+    document.getElementById('dImgPlaceholder').style.display='none';
+    renderAll();toast('Imagem salva ✓');
+  };
+  reader.readAsDataURL(file);
+}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');editId=null;}
+
+/* ── NEW ── */
+function openNew(preDate){
+  newImgData=null;
+  document.getElementById('nImgPreview').style.display='none';
+  ['nTitle','nBriefing','nLink'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nDate').value=preDate||'';
+  document.querySelectorAll('#nBrand .tag-btn').forEach((b,i)=>b.classList.toggle('sel',i===0));
+  document.querySelectorAll('#nFormato .tag-btn').forEach((b,i)=>b.classList.toggle('sel',i===0));
+  document.querySelectorAll('#nPlatform .tag-btn').forEach((b,i)=>b.classList.toggle('sel',i===0));
+  document.querySelectorAll('#nApprovers .tag-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('nOwnerSel').innerHTML=USERS.map(u=>`<button class="owner-btn${u===cu?' active':''}" data-u="${u}" onclick="selOwner(this)">${avatarEl(u,26)}<span class="owner-btn-name">${u}</span></button>`).join('');
+  document.getElementById('newOverlay').classList.add('open');
+}
+function closeNew(){document.getElementById('newOverlay').classList.remove('open');}
+function selOwner(btn){document.querySelectorAll('#nOwnerSel .owner-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function selTag(btn,gid){document.querySelectorAll(`#${gid} .tag-btn`).forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function togTag(btn){btn.classList.toggle('sel');}
+function getSel(gid){return[...document.querySelectorAll(`#${gid} .tag-btn.sel`)].map(b=>b.textContent);}
+function handleNewImg(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{newImgData=ev.target.result;const p=document.getElementById('nImgPreview');p.src=newImgData;p.style.display='block';};
+  reader.readAsDataURL(file);
+}
+function saveNew(){
+  const title=document.getElementById('nTitle').value.trim();if(!title){toast('Adicione um título');return;}
+  const date=document.getElementById('nDate').value;if(!date){toast('Escolha a data');return;}
+  const ownerBtn=document.querySelector('#nOwnerSel .owner-btn.active');
+  const owner=ownerBtn?ownerBtn.dataset.u:cu;
+  contents.push({
+    id:Date.now(),title,owner,
+    brand:getSel('nBrand')[0]||'Ascendra',
+    formato:getSel('nFormato')[0]||'Post',
+    platform:getSel('nPlatform').join(', ')||'Instagram',
+    date,briefing:document.getElementById('nBriefing').value.trim(),
+    link:document.getElementById('nLink').value.trim(),
+    status:'rascunho',approvers:getSel('nApprovers'),approvals:[],comments:[],img:newImgData||''
+  });
+  sheetSave();closeNew();renderAll();toast('Conteúdo criado ✓');
+}
+
+/* ── HELPERS ── */
+function closeIfBg(e,id){if(e.target===document.getElementById(id)){if(id==='detailOverlay')closeDetail();else closeNew();}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+function formatIcon(f){
+  if(!f)return'📄';
+  const fmt=f.toLowerCase();
+  if(fmt.includes('carrossel'))return'🎠';
+  if(fmt.includes('blog'))return'✍️';
+  if(fmt.includes('email'))return'📧';
+  if(fmt.includes('podcast'))return'🎙️';
+  if(fmt.includes('landing'))return'🖥️';
+  if(fmt.includes('vídeo')||fmt.includes('video')||fmt.includes('youtube'))return'🎬';
+  if(fmt.includes('atualidade'))return'📰';
+  return'📄';
+}
+
+function filterMyQueue(){
+  document.getElementById('fApprover').value=cu;
+  document.getElementById('fStatus').value='revisao';
+  document.getElementById('fOwner').value='';
+  document.getElementById('fMarca').value='';
+  document.getElementById('myQueueBtn').style.background='var(--bg-revisao)';
+  document.getElementById('myQueueBtn').style.borderColor='var(--s-revisao)';
+  renderAll();
+  toast(`Mostrando o que precisa da sua aprovação`);
+}
+
+function resetFilters(){
+  ['fMarca','fStatus','fApprover'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value='';
+  });
+  const btn=document.getElementById('myQueueBtn');
+  if(btn){btn.style.background='';btn.style.borderColor='';}
+  renderAll();
+}
+
+function renderAll(){
+  if(!cu)return;
+  // Destacar filtros ativos
+  ['fMarca','fStatus','fApprover'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active-filter', el.value!=='');
+  });
+  updateStats();renderCal();renderKanban();renderPlanning();
+}
+
+/* ── INIT ── */
+// Conteúdos de setembro 2026 — injetados pelo planejamento
+const SETEMBRO_SEED = [{"id": 2026090101, "title": "Carrossel: Candidate Experience — o primeiro contato define tudo", "owner": "Cecília", "brand": "Admite Fácil", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-01", "briefing": "Mostrar como um processo admissional organizado melhora a experiência do candidato e reduz desistências. Cada slide representa um momento da jornada: primeiro contato, envio de documentos, feedback, primeiro dia. CTA: 'Conheça o Admite Fácil.'", "link": "", "status": "rascunho", "approvers": ["Ramon", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090201, "title": "Vídeo Agência #1 — Tema a definir", "owner": "Cecília", "brand": "Ascendra", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-02", "briefing": "Vídeo institucional/técnico conforme gravação da agência. Tema a definir com a agência. Encaminhar briefing criativo até 26/08. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090202, "title": "Artigo: Disaster Recovery na AWS — quanto custa ficar com a operação parada?", "owner": "Elton", "brand": "Ascendra", "formato": "Blog", "platform": "Blog", "date": "2026-09-01", "briefing": "Artigo calculando o impacto financeiro de downtime não planejado e como um plano de DR na AWS (Multi-AZ, backups automatizados, RTO/RPO) protege o negócio. SEO: 'Disaster Recovery AWS', 'custo downtime'. CTA: 'Fale com nossos especialistas AWS.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090301, "title": "Email base AWS: Seu plano de Disaster Recovery está preparado?", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-03", "briefing": "Email para base AWS. Assunto: 'Seu plano de Disaster Recovery está preparado?' Abordar riscos de não ter um plano, o que a AWS oferece e como a Ascendra ajuda a estruturar. CTA: 'Quero saber mais sobre DR na AWS.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090401, "title": "Carrossel: 6 sinais de que seus sistemas legados estão impedindo o crescimento", "owner": "Cecília", "brand": "Ascendra", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-04", "briefing": "Mostrar problemas comuns de sistemas antigos: integrações difíceis, lentidão, custo de manutenção, falta de escalabilidade, processos manuais, dificuldade de inovar. Encerrar mostrando que modernizar pode ser gradual. CTA: 'Descubra como modernizar sua operação.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090402, "title": "Email CIOs/TI: Quanto custa uma hora de indisponibilidade?", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-04", "briefing": "Email segmentado para CIOs e líderes de TI. Assunto: 'Quanto custa uma hora de indisponibilidade?' Usar dados de mercado para contextualizar. Ligar ao artigo de DR. CTA: 'Veja como a AWS resolve isso.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090501, "title": "YouTube: Amazon Bedrock — criando um assistente corporativo", "owner": "Elton", "brand": "Ascendra", "formato": "YouTube", "platform": "YouTube", "date": "2026-09-05", "briefing": "Demonstração prática de como usar o Amazon Bedrock para construir um assistente corporativo customizado. Mostrar configuração, integração com base de conhecimento interna e casos de uso reais. Formato: demo técnica de 10–15min. CTA: 'Ative o lembrete.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090701, "title": "Post: APIs estão transformando a integração entre sistemas corporativos", "owner": "Cecília", "brand": "Ascendra", "formato": "Post", "platform": "LinkedIn, Instagram", "date": "2026-09-07", "briefing": "Explicar por que arquiteturas orientadas a APIs aceleram inovação e eliminam retrabalho entre sistemas corporativos. Trazer dado de mercado. Tom educativo. CTA: 'Saiba como integrar seus sistemas.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090801, "title": "Vídeo Agência Admite Fácil #1 — Demonstração do processo de admissão digital", "owner": "Cecília", "brand": "Admite Fácil", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-08", "briefing": "Demonstração do processo de admissão digital no Admite Fácil: envio de documentos, assinatura eletrônica, integração com folha. Vídeo produzido pela agência. CTA: 'Solicite uma demonstração.'", "link": "", "status": "rascunho", "approvers": ["Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090802, "title": "Artigo: API First — a base da transformação digital", "owner": "Ramon", "brand": "Ascendra", "formato": "Blog", "platform": "Blog", "date": "2026-09-08", "briefing": "Artigo explicando o conceito de API First, por que empresas que adotam essa estratégia inovam mais rápido e como implementar. Exemplos práticos de integração entre ERP, CRM e plataformas cloud. SEO: 'API First', 'integração sistemas corporativos'. CTA: 'Conheça nossas soluções de integração.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090901, "title": "Vídeo Agência #2 — Tema a definir", "owner": "Cecília", "brand": "Ascendra", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-09", "briefing": "Conteúdo gravado pela agência. Tema a definir. Encaminhar briefing até 02/09. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026090902, "title": "Email clientes TOTVS: Integrações inteligentes entre ERP e outros sistemas", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-09", "briefing": "Email segmentado para clientes TOTVS. Assunto: 'Seu Protheus ainda trabalha sozinho?' Mostrar como APIs conectam o ERP a outras plataformas (AWS, analytics, automação). CTA: 'Quero integrar meu TOTVS.'", "link": "", "status": "rascunho", "approvers": ["Ramon", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091101, "title": "Carrossel: API First — por que essa estratégia está acelerando empresas", "owner": "Cecília", "brand": "Ascendra", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-11", "briefing": "Explicar os benefícios de construir integrações modernas utilizando APIs. 5–6 slides com exemplos práticos e visuais. Linguagem acessível para gestores. CTA: 'Conheça nossas soluções de integração.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091102, "title": "Email tecnologia: API First na prática", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-11", "briefing": "Email para segmento de tecnologia. Assunto: 'API First na prática: como empresas estão eliminando retrabalho.' Case prático de integração. CTA: 'Veja como funciona na sua empresa.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091201, "title": "YouTube: Integração Protheus + AWS na prática", "owner": "Elton", "brand": "Ascendra", "formato": "YouTube", "platform": "YouTube", "date": "2026-09-12", "briefing": "Demonstração técnica de como integrar o TOTVS Protheus com serviços AWS (Lambda, API Gateway, S3). Mostrar um caso de uso real: sincronização de pedidos ou notas fiscais. Formato: demo 10–15min. CTA: 'Ative o lembrete.'", "link": "", "status": "rascunho", "approvers": ["Elton", "Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091401, "title": "Especial Dia do Cliente: Tecnologia se constrói com parceria", "owner": "João Paulo", "brand": "Ascendra", "formato": "Post", "platform": "LinkedIn, Instagram", "date": "2026-09-14", "briefing": "Post especial antecipando o Dia do Cliente (15/09). Homenagem aos clientes destacando confiança, parceria e resultados construídos em conjunto. Tom: institucional e próximo. Pode incluir depoimento ou frase de cliente. CTA: 'Veja como a tecnologia pode impulsionar sua empresa.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091501, "title": "Carrossel Admite Fácil: Os indicadores que todo RH estratégico acompanha", "owner": "Cecília", "brand": "Admite Fácil", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-15", "briefing": "Mostrar métricas que ajudam RHs a tomar melhores decisões: tempo de admissão, taxa de abandono no processo, custo por contratação, tempo até produtividade. 5 slides com dados e visuais. CTA: 'Modernize seu RH.'", "link": "", "status": "rascunho", "approvers": ["Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091502, "title": "Artigo: Como preparar seus dados para projetos de IA", "owner": "Elton", "brand": "Ascendra", "formato": "Blog", "platform": "Blog", "date": "2026-09-15", "briefing": "Artigo sobre data readiness para IA: qualidade de dados, governança, Data Lake vs. Data Warehouse, ferramentas AWS (Glue, Athena, SageMaker). SEO: 'dados para IA', 'data quality'. CTA: 'Fale com nossos especialistas.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091601, "title": "Vídeo Agência #3 — Tema a definir", "owner": "Cecília", "brand": "Ascendra", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-16", "briefing": "Conteúdo produzido pela agência. Tema a definir. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091602, "title": "Email Analytics: Seus dados estão preparados para IA?", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-16", "briefing": "Email para segmento analytics. Assunto: 'Seus dados estão preparados para IA?' Ligar ao artigo do blog. Mostrar diagnóstico rápido de maturidade de dados. CTA: 'Quero saber mais.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091801, "title": "Carrossel: Data Lake x Data Warehouse — qual escolher?", "owner": "Cecília", "brand": "Ascendra", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-18", "briefing": "Explicar diferenças, aplicações e benefícios de cada abordagem. 5 slides com comparação visual: quando usar Data Lake, quando usar Data Warehouse, custo, escalabilidade e casos de uso. CTA: 'Fale com nossos especialistas.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091802, "title": "Email Diretoria: Dados confiáveis geram decisões melhores", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-18", "briefing": "Email para diretores e C-level. Assunto: 'Você toma decisões baseadas em dados — mas esses dados são confiáveis?' Abordar governança de dados, qualidade e o papel do Analytics. CTA: 'Agende uma conversa.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026091901, "title": "YouTube: Dashboard executivo conectado ao Protheus", "owner": "Elton", "brand": "Ascendra", "formato": "YouTube", "platform": "YouTube", "date": "2026-09-19", "briefing": "Demonstração de como construir um dashboard executivo no AWS QuickSight ou Power BI conectado ao TOTVS Protheus. Mostrar KPIs financeiros e operacionais em tempo real. Formato: demo 10–15min. CTA: 'Ative o lembrete.'", "link": "", "status": "rascunho", "approvers": ["Elton", "Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092101, "title": "Post: Platform Engineering — tendência para empresas que querem escalar", "owner": "Elton", "brand": "Ascendra", "formato": "Post", "platform": "LinkedIn, Instagram", "date": "2026-09-21", "briefing": "Explicar o conceito de Platform Engineering e seus benefícios para equipes de tecnologia: padronização, produtividade, governança. Tom educativo para CTOs e gestores de TI. CTA: 'Conheça essa tendência.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092201, "title": "Vídeo Agência Admite Fácil #2 — Tema a definir", "owner": "Cecília", "brand": "Admite Fácil", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-22", "briefing": "Vídeo produzido pela agência para o Admite Fácil. Tema a definir. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092202, "title": "Artigo: Technical Debt — o custo invisível da tecnologia", "owner": "Ramon", "brand": "Ascendra", "formato": "Blog", "platform": "Blog", "date": "2026-09-22", "briefing": "Artigo sobre dívida técnica: o que é, como se acumula, como calcular o impacto financeiro e como um plano de modernização reduz o risco sem interromper a operação. SEO: 'dívida técnica', 'modernização de sistemas'. CTA: 'Fale com nossos especialistas.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092301, "title": "Vídeo Agência #4 — Tema a definir", "owner": "Cecília", "brand": "Ascendra", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-23", "briefing": "Conteúdo produzido pela agência. Tema a definir. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092302, "title": "Email Infraestrutura: Sua TI está preparada para crescer?", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-23", "briefing": "Email para segmento de infraestrutura. Assunto: 'Sua TI está preparada para crescer?' Abordar escalabilidade, custo de crescer com infraestrutura legada vs. cloud. CTA: 'Quero entender como escalar.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092501, "title": "Carrossel: Os custos invisíveis da TI", "owner": "Cecília", "brand": "Ascendra", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-25", "briefing": "Mostrar como retrabalho, sistemas legados e integrações manuais impactam os custos do negócio sem aparecer no orçamento. 6 slides com dados e exemplos. CTA: 'Descubra onde sua empresa pode economizar.'", "link": "", "status": "rascunho", "approvers": ["Elton", "João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092502, "title": "Email Geral: Diagnóstico gratuito de maturidade digital", "owner": "Cecília", "brand": "Ascendra", "formato": "Email", "platform": "Email", "date": "2026-09-25", "briefing": "Email para toda a base. Assunto: 'Em 30 minutos, sua empresa sabe onde está na jornada digital.' Oferecer diagnóstico gratuito de maturidade digital. CTA: 'Agendar diagnóstico gratuito.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092601, "title": "YouTube: Criando um Data Lake na AWS", "owner": "Elton", "brand": "Ascendra", "formato": "YouTube", "platform": "YouTube", "date": "2026-09-26", "briefing": "Demonstração prática de como criar um Data Lake na AWS com S3, Glue e Athena. Mostrar ingestão de dados, transformação e consulta. Formato: demo técnica 10–15min. CTA: 'Ative o lembrete.'", "link": "", "status": "rascunho", "approvers": ["Elton"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092801, "title": "Post: O papel estratégico do CIO na era da IA", "owner": "João Paulo", "brand": "Ascendra", "formato": "Post", "platform": "LinkedIn, Instagram", "date": "2026-09-28", "briefing": "Mostrar como a liderança de TI está se tornando protagonista da transformação digital e da estratégia de negócio. Tom reflexivo para C-level. CTA: 'Veja como a tecnologia pode impulsionar sua empresa.'", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}, {"id": 2026092901, "title": "Carrossel Admite Fácil: Como reduzir o tempo de admissão sem perder segurança", "owner": "Cecília", "brand": "Admite Fácil", "formato": "Carrossel", "platform": "LinkedIn, Instagram", "date": "2026-09-29", "briefing": "Mostrar boas práticas para acelerar admissões mantendo conformidade: checklist digital, assinatura eletrônica, validação automática de documentos, integração com eSocial. 5 slides. CTA: 'Conheça o Admite Fácil.'", "link": "", "status": "rascunho", "approvers": ["Ramon"], "approvals": [], "comments": [], "img": ""}, {"id": 2026093001, "title": "Vídeo Agência #5 — Tema a definir", "owner": "Cecília", "brand": "Ascendra", "formato": "Vídeo", "platform": "LinkedIn, Instagram", "date": "2026-09-30", "briefing": "Conteúdo produzido pela agência. Tema a definir. CTA: a definir.", "link": "", "status": "rascunho", "approvers": ["João Paulo"], "approvals": [], "comments": [], "img": ""}];
+
+function loadSetembroSeed(){
+  // Só injeta se não houver dados de setembro ainda no Sheets/backup
+  const existing = contents.filter(c => c.date && c.date.startsWith('2026-09'));
+  if(existing.length === 0){
+    SETEMBRO_SEED.forEach(c => { if(!contents.find(x=>x.id===c.id)) contents.push(c); });
+    sheetSave();
+    toast('31 conteúdos de setembro carregados ✓');
+  }
+}
+
+renderLogin();
+</script>
+</body>
+</html>
